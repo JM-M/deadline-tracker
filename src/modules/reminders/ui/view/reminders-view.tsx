@@ -1,14 +1,25 @@
 "use client";
 
-import { ReminderSheet } from "@/components/reminder-sheet";
-import { Reminders } from "@/components/reminders";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/constants";
+import { ReminderSheet } from "@/modules/reminders/ui/component/reminder-sheet";
+import { Reminders } from "@/modules/reminders/ui/component/reminders";
+import { useTRPC } from "@/trpc/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 export const RemindersView = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState<any>(null);
+
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(
+    trpc.reminders.getMany.queryOptions({
+      page: DEFAULT_PAGE,
+      pageSize: DEFAULT_PAGE_SIZE,
+    }),
+  );
 
   return (
     <>
@@ -23,22 +34,29 @@ export const RemindersView = () => {
       </div>
 
       <Reminders
+        reminders={data}
         onReminderClick={(reminder) => {
           setSelectedReminder(reminder);
           setIsSheetOpen(true);
         }}
-      />
-
-      <Button
-        size="icon"
-        className="fixed right-4 bottom-10 size-12"
-        onClick={() => {
+        onAddReminderClick={() => {
           setSelectedReminder(null);
           setIsSheetOpen(true);
         }}
-      >
-        <PlusIcon className="size-8" />
-      </Button>
+      />
+
+      {data.length > 0 && (
+        <Button
+          size="icon"
+          className="fixed right-4 bottom-10 size-12"
+          onClick={() => {
+            setSelectedReminder(null);
+            setIsSheetOpen(true);
+          }}
+        >
+          <PlusIcon className="size-8" />
+        </Button>
+      )}
 
       <ReminderSheet
         isOpen={isSheetOpen}

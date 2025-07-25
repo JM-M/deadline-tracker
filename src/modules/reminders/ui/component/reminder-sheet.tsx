@@ -4,12 +4,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { ReminderGetMany } from "@/modules/reminders/types";
 import { ReminderForm } from "./reminder-form";
 
 interface ReminderSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: any; // TODO: add type
+  initialData?: ReminderGetMany[number];
 }
 export const ReminderSheet = ({
   isOpen,
@@ -31,7 +32,10 @@ export const ReminderSheet = ({
           </SheetTitle>
         </SheetHeader>
         <div className="flex-1 px-4">
-          <ReminderForm />
+          <ReminderForm
+            onSubmit={() => onOpenChange(false)}
+            initialData={initialData}
+          />
         </div>
       </SheetContent>
     </Sheet>

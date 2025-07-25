@@ -1,4 +1,5 @@
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { nanoid } from "nanoid";
 
 // Better auth
 export const user = pgTable("user", {
@@ -57,6 +58,22 @@ export const verification = pgTable("verification", {
     () => /* @__PURE__ */ new Date(),
   ),
   updatedAt: timestamp("updated_at").$defaultFn(
+    () => /* @__PURE__ */ new Date(),
+  ),
+});
+
+// Reminders
+export const reminder = pgTable("reminder", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  deadline: timestamp("deadline"),
+  createdAt: timestamp("created_at").$defaultFn(
     () => /* @__PURE__ */ new Date(),
   ),
 });
