@@ -24,6 +24,8 @@ export default async function Home() {
     }),
   );
 
+  void queryClient.prefetchQuery(trpc.preferences.get.queryOptions());
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense fallback={<div>Loading...</div>}>

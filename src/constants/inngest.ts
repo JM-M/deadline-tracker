@@ -1,1 +1,1 @@
-export const MEETINGS_PROCESSING = "meetings/processing";
+export const SEND_REMINDER = "reminders/send";

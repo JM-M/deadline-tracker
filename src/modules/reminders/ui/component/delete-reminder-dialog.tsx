@@ -37,7 +37,11 @@ export const DeleteReminderDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex flex-row items-center justify-end gap-2">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction color="destructive" onClick={onConfirmDelete}>
+          <AlertDialogAction
+            color="destructive"
+            onClick={onConfirmDelete}
+            className="bg-red-600"
+          >
             {isPending ? <Spinner /> : <TrashIcon />}
             Delete
           </AlertDialogAction>

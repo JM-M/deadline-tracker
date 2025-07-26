@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, time, timestamp } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
 // Better auth
@@ -62,14 +62,32 @@ export const verification = pgTable("verification", {
   ),
 });
 
-// Reminders
-export const reminder = pgTable("reminder", {
+// Added by JMM
+export const preferences = pgTable("preferences", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => nanoid()),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  timezone: text("timezone").notNull(),
+  utcReminderTime: time("utc_reminder_time").notNull(),
+  createdAt: timestamp("created_at").$defaultFn(
+    () => /* @__PURE__ */ new Date(),
+  ),
+  updatedAt: timestamp("updated_at").$defaultFn(
+    () => /* @__PURE__ */ new Date(),
+  ),
+});
+
+export const reminder = pgTable("reminder", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" })
+    .unique(),
   title: text("title").notNull(),
   description: text("description"),
   deadline: timestamp("deadline"),

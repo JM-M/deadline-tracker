@@ -39,7 +39,7 @@ export const remindersRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        deadline: z.date().optional(),
+        deadline: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -48,6 +48,7 @@ export const remindersRouter = createTRPCRouter({
         .insert(reminder)
         .values({
           ...input,
+          deadline: input.deadline ? new Date(input.deadline) : undefined,
           userId,
         })
         .returning();
@@ -67,14 +68,17 @@ export const remindersRouter = createTRPCRouter({
         id: z.string(),
         title: z.string(),
         description: z.string().optional(),
-        deadline: z.date().optional(),
+        deadline: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.session.userId;
       const [updatedReminder] = await db
         .update(reminder)
-        .set(input)
+        .set({
+          ...input,
+          deadline: input.deadline ? new Date(input.deadline) : undefined,
+        })
         .where(and(eq(reminder.id, input.id), eq(reminder.userId, userId)))
         .returning();
 

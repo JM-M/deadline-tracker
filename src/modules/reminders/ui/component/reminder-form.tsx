@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, TrashIcon } from "lucide-react";
+import { CalendarIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -95,7 +95,11 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
   const submitHandler = (data: ReminderFormValues) => {
     if (isEditing) {
       update.mutate(
-        { ...data, id: initialData?.id },
+        {
+          ...data,
+          id: initialData?.id,
+          deadline: data.deadline?.toISOString(),
+        },
         {
           onSuccess: () => {
             toast.success("Reminder updated successfully");
@@ -110,19 +114,22 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
         },
       );
     } else {
-      create.mutate(data, {
-        onSuccess: () => {
-          form.reset();
-          toast.success("Reminder created successfully");
-          queryClient.invalidateQueries({
-            queryKey: trpc.reminders.getMany.queryKey(),
-          });
-          onSubmit();
+      create.mutate(
+        { ...data, deadline: data.deadline?.toISOString() },
+        {
+          onSuccess: () => {
+            form.reset();
+            toast.success("Reminder created successfully");
+            queryClient.invalidateQueries({
+              queryKey: trpc.reminders.getMany.queryKey(),
+            });
+            onSubmit();
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
         },
-        onError: (error) => {
-          toast.error(error.message);
-        },
-      });
+      );
     }
   };
 
@@ -249,7 +256,7 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
               onClick={() => setIsDeleteDialogOpen(true)}
               disabled={deleteReminder.isPending}
             >
-              {deleteReminder.isPending ? <Spinner /> : <TrashIcon />}
+              {deleteReminder.isPending ? <Spinner /> : <Trash2Icon />}
               Delete
             </Button>
           )}

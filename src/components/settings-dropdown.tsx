@@ -1,3 +1,4 @@
+import { useAppContext } from "@/hooks/use-app-context";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { SettingsIcon } from "lucide-react";
@@ -13,7 +14,7 @@ import {
 
 export const SettingsDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const { setIsSettingsDialogOpen } = useAppContext();
   const router = useRouter();
 
   const onLogout = () => {
@@ -45,22 +46,12 @@ export const SettingsDropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
-        <DropdownMenuItem onClick={onLogout}>
-          {/* <LogOut className="mr-2 h-4 w-4" /> */}
-          <span>Logout</span>
-        </DropdownMenuItem>
-        {/* <DropdownMenuSeparator /> */}
-        {/* TODO: Add more menu items here as needed */}
-        {/* Examples:
-        <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={() => setIsSettingsDialogOpen(true)}>
           <span>Settings</span>
         </DropdownMenuItem>
-        */}
+        <DropdownMenuItem onClick={onLogout}>
+          <span>Logout</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

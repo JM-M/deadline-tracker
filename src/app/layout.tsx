@@ -1,7 +1,9 @@
 import { TRPCReactProvider } from "@/trpc/client";
 import type { Metadata } from "next";
 import { Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
+import { Providers } from "./provider";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -25,13 +27,16 @@ export default function RootLayout({
 }>) {
   return (
     <TRPCReactProvider>
-      <html lang="en">
-        <body
-          className={`${geistMono.variable} ${spaceGrotesk.variable} font-sans antialiased`}
-        >
-          {children}
-        </body>
-      </html>
+      <Providers>
+        <html lang="en">
+          <body
+            className={`${geistMono.variable} ${spaceGrotesk.variable} font-sans antialiased`}
+          >
+            <Toaster />
+            {children}
+          </body>
+        </html>
+      </Providers>
     </TRPCReactProvider>
   );
 }

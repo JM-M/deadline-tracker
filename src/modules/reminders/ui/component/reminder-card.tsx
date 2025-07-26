@@ -1,10 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReminderGetMany } from "@/modules/reminders/types";
-import {
-  differenceInDays,
-  differenceInHours,
-  differenceInMinutes,
-} from "date-fns";
+import { differenceInDays, differenceInMinutes } from "date-fns";
 
 interface ReminderCardProps {
   reminder: ReminderGetMany[number];
@@ -17,9 +13,15 @@ export const ReminderCard = ({ reminder, onClick }: ReminderCardProps) => {
   let deadlineText = "No deadline";
   if (deadline) {
     const diffDays = differenceInDays(deadline, new Date());
-    const diffHours = differenceInHours(deadline, new Date());
     const diffMinutes = differenceInMinutes(deadline, new Date());
-    deadlineText = `${diffDays}D ${diffHours}H ${diffMinutes}M`;
+
+    if (diffDays > 0) {
+      deadlineText = `${diffDays} days left`;
+    } else {
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+      deadlineText = `${hours} hrs ${minutes} mins left`;
+    }
   }
 
   return (
