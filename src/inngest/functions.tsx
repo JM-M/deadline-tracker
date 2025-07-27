@@ -1,6 +1,6 @@
 import { SEND_REMINDER } from "@/constants/inngest";
 import { db } from "@/db";
-import { preferences, user } from "@/db/schema";
+import { preferences, reminder, user } from "@/db/schema";
 import { sendEmail } from "@/lib/email";
 import { NotificationEmail } from "@/modules/reminders/emails/notification";
 import { eq, sql } from "drizzle-orm";
@@ -32,8 +32,10 @@ export const sendRemindersCron = inngest.createFunction(
       data: user,
     }));
 
-    // Send all events at once
-    await step.sendEvent(SEND_REMINDER, events);
+    if (events.length > 0) {
+      // Send all events at once
+      await step.sendEvent(SEND_REMINDER, events);
+    }
   },
 );
 
@@ -42,16 +44,31 @@ export const sendReminder = inngest.createFunction(
   { event: SEND_REMINDER },
   async ({ event }) => {
     // 3️⃣ We can now grab the email and user id from the event payload
-    const { email, name } = event.data;
+    const { email, name, userId } = event.data;
 
-    // Construct email content
-    const content = <NotificationEmail name={name} />;
+    const reminders = await db
+      .select()
+      .from(reminder)
+      .where(eq(reminder.userId, userId));
 
-    // Send email
-    await sendEmail({
-      recipients: email,
-      subject: "Reminder",
-      content,
-    });
+    // const activeReminders = reminders.filter((reminder) => {
+    //   if (reminder.deadline) {
+    //     return isBefore(new Date(), reminder.deadline);
+    //   }
+    //   return true;
+    // });
+
+    if (reminders.length > 0) {
+      // Construct email content
+      const content = <NotificationEmail name={name} reminders={reminders} />;
+
+      console.log("Sending email to", email);
+      // Send email
+      await sendEmail({
+        recipients: email,
+        subject: "Reminder",
+        content,
+      });
+    }
   },
 );

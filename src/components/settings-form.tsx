@@ -87,6 +87,14 @@ export const SettingsForm = ({ onSubmit }: SettingsFormProps) => {
       {
         onSuccess: () => {
           queryClient.invalidateQueries(trpc.preferences.get.queryOptions());
+          queryClient.setQueryData(
+            trpc.preferences.get.queryKey(),
+            (old: any) => ({
+              ...old,
+              utcReminderTime,
+              timezone: data.timezone,
+            }),
+          );
           toast.success("Preferences updated");
           onSubmit?.(data);
         },

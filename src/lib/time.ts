@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 // Generate timezone options from IANA timezone database
 export const getTimezoneOptions = () => {
@@ -32,6 +33,7 @@ export const getTimezoneOptions = () => {
       .sort((a, b) => a.label.localeCompare(b.label));
   } catch (error) {
     // Fallback to a curated list if Intl.supportedValuesOf is not supported
+    // TODO: Add more timezones and make it match the format of the above
     return [
       { value: "UTC", label: "UTC" },
       { value: "Africa/Lagos", label: "West Africa Time (WAT)" },
@@ -69,48 +71,48 @@ export function convertTimeBetweenTimezones({
 }): string {
   const [hours, minutes, seconds] = timeString.split(":").map(Number);
 
-  // Create a date object for today with the source timezone's specified time
+  // Create a date object for today
   const today = new Date();
 
-  // Create a date in the source timezone
-  const sourceDate = new Date();
-  sourceDate.setFullYear(today.getFullYear());
-  sourceDate.setMonth(today.getMonth());
-  sourceDate.setDate(today.getDate());
-  sourceDate.setHours(hours);
-  sourceDate.setMinutes(minutes);
-  sourceDate.setSeconds(seconds);
+  // Create a date representing the time in the source timezone
+  const date = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    hours,
+    minutes,
+    seconds,
+  );
 
-  // Format the date in the source timezone to get the ISO string
-  const sourceFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: fromTimezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-
-  const sourceFormatted = sourceFormatter.format(sourceDate);
-  const sourceDateISO = new Date(sourceFormatted + "Z");
-
-  // Convert to the target timezone
-  const targetFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: toTimezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-
-  const targetFormatted = targetFormatter.format(sourceDateISO);
-  const targetDate = new Date(targetFormatted);
+  const sourceDate = fromZonedTime(date, fromTimezone);
+  const targetDate = toZonedTime(sourceDate, toTimezone);
 
   // Format as HH:mm:ss
   return format(targetDate, "HH:mm:ss");
+}
+
+export function getReminderTime({
+  utcReminderTime,
+  timezone,
+}: {
+  utcReminderTime: string;
+  timezone: string;
+}): Date | null {
+  try {
+    const convertedReminderTime = convertTimeBetweenTimezones({
+      timeString: utcReminderTime,
+      fromTimezone: "UTC",
+      toTimezone: timezone,
+    });
+
+    const hours = Number(convertedReminderTime.split(":")[0]);
+    if (!isNaN(hours) && hours >= 0 && hours <= 23) {
+      // TODO: Handle minutes
+      return new Date(new Date().setHours(hours, 0, 0, 0));
+    }
+  } catch (error) {
+    console.error("Error converting reminder time:", error);
+  }
+
+  return null;
 }

@@ -1,6 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getReminderTime } from "@/lib/time";
+import { cn } from "@/lib/utils";
 import { ReminderGetMany } from "@/modules/reminders/types";
-import { differenceInDays, differenceInMinutes } from "date-fns";
+import { useTRPC } from "@/trpc/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { differenceInDays, differenceInMinutes, isBefore } from "date-fns";
 
 interface ReminderCardProps {
   reminder: ReminderGetMany[number];
@@ -8,19 +12,66 @@ interface ReminderCardProps {
 }
 
 export const ReminderCard = ({ reminder, onClick }: ReminderCardProps) => {
-  const { title, description, deadline } = reminder;
+  const { title } = reminder;
+  let deadline = reminder.deadline;
+
+  const trpc = useTRPC();
+  const preferences = useSuspenseQuery(trpc.preferences.get.queryOptions());
+
+  const reminderTime = preferences.data
+    ? getReminderTime({
+        utcReminderTime: preferences.data.utcReminderTime,
+        timezone: preferences.data.timezone,
+      })
+    : null;
+
+  // If we have a deadline and preferences exist, combine the date with the reminder time
+  if (deadline && reminderTime) {
+    const selectedDate = deadline;
+
+    // Create a new date by combining the selected date with the reminder time
+    const combinedDateTime = new Date(selectedDate);
+    combinedDateTime.setHours(
+      reminderTime.getHours(),
+      reminderTime.getMinutes(),
+      reminderTime.getSeconds(),
+      0,
+    );
+
+    deadline = combinedDateTime.toISOString();
+  }
+
+  const now = new Date();
+  const isPast = deadline && isBefore(deadline, now);
 
   let deadlineText = "No deadline";
   if (deadline) {
-    const diffDays = differenceInDays(deadline, new Date());
-    const diffMinutes = differenceInMinutes(deadline, new Date());
+    const diffDays = differenceInDays(deadline, now);
+    const diffMinutes = differenceInMinutes(deadline, now);
 
-    if (diffDays > 0) {
-      deadlineText = `${diffDays} days left`;
+    if (Math.abs(diffDays) > 0) {
+      if (isPast) {
+        deadlineText = `${Math.abs(diffDays)} day${
+          Math.abs(diffDays) === 1 ? "" : "s"
+        } ago`;
+      } else {
+        deadlineText = `${diffDays} day${diffDays === 1 ? "" : "s"} left`;
+      }
     } else {
-      const hours = Math.floor(diffMinutes / 60);
-      const minutes = diffMinutes % 60;
-      deadlineText = `${hours} hrs ${minutes} mins left`;
+      const hours = Math.floor(Math.abs(diffMinutes) / 60);
+      const minutes = Math.abs(diffMinutes) % 60;
+
+      if (diffMinutes === 0) {
+        deadlineText = "Due now";
+      } else if (isPast) {
+        deadlineText = `${hours} hr${hours === 1 ? "" : "s"} ${minutes} min${
+          minutes === 1 ? "" : "s"
+        } ago`;
+      } else {
+        deadlineText = `${hours} hr${hours === 1 ? "" : "s"} ${minutes} min${
+          minutes === 1 ? "" : "s"
+        } left`;
+      }
     }
   }
 
@@ -34,7 +85,11 @@ export const ReminderCard = ({ reminder, onClick }: ReminderCardProps) => {
       </CardHeader>
       <CardContent className="px-3">
         <div className="flex items-center justify-end">
-          <p className="text-muted-foreground text-sm font-medium">
+          <p
+            className={cn("text-muted-foreground text-sm font-medium", {
+              "text-red-400": isPast,
+            })}
+          >
             {deadlineText}
           </p>
         </div>

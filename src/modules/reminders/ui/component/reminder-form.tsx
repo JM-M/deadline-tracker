@@ -68,6 +68,7 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
   const create = useMutation(trpc.reminders.create.mutationOptions());
   const update = useMutation(trpc.reminders.update.mutationOptions());
   const deleteReminder = useMutation(trpc.reminders.delete.mutationOptions());
@@ -93,12 +94,14 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
   };
 
   const submitHandler = (data: ReminderFormValues) => {
+    const deadline = data.deadline?.toISOString();
+
     if (isEditing) {
       update.mutate(
         {
           ...data,
           id: initialData?.id,
-          deadline: data.deadline?.toISOString(),
+          deadline,
         },
         {
           onSuccess: () => {
@@ -115,7 +118,7 @@ export const ReminderForm = ({ onSubmit, initialData }: ReminderFormProps) => {
       );
     } else {
       create.mutate(
-        { ...data, deadline: data.deadline?.toISOString() },
+        { ...data, deadline },
         {
           onSuccess: () => {
             form.reset();

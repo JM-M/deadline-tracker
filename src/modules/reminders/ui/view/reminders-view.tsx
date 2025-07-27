@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/constants";
 import { useAppContext } from "@/hooks/use-app-context";
-import { convertTimeBetweenTimezones } from "@/lib/time";
+import { getReminderTime } from "@/lib/time";
 import { ReminderSheet } from "@/modules/reminders/ui/component/reminder-sheet";
 import { Reminders } from "@/modules/reminders/ui/component/reminders";
 import { useTRPC } from "@/trpc/client";
@@ -28,19 +28,12 @@ export const RemindersView = () => {
 
   const preferences = useSuspenseQuery(trpc.preferences.get.queryOptions());
 
-  let reminderTime;
-  if (preferences.data) {
-    const convertedReminderTime = convertTimeBetweenTimezones({
-      timeString: preferences.data.utcReminderTime,
-      fromTimezone: "UTC",
-      toTimezone: preferences.data.timezone,
-    });
-    const hours = Number(convertedReminderTime.split(":")[0]);
-    if (!isNaN(hours) && hours >= 0 && hours <= 23) {
-      // TODO: Handle minutes
-      reminderTime = new Date(new Date().setHours(hours, 0, 0, 0));
-    }
-  }
+  const reminderTime = preferences.data
+    ? getReminderTime({
+        utcReminderTime: preferences.data.utcReminderTime,
+        timezone: preferences.data.timezone,
+      })
+    : null;
 
   return (
     <>
