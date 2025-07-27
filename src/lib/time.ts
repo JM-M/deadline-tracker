@@ -32,6 +32,7 @@ export const getTimezoneOptions = () => {
       })
       .sort((a, b) => a.label.localeCompare(b.label));
   } catch (error) {
+    console.error("Error getting timezone options: ", error);
     // Fallback to a curated list if Intl.supportedValuesOf is not supported
     // TODO: Add more timezones and make it match the format of the above
     return [

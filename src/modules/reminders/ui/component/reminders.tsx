@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ReminderGetMany } from "@/modules/reminders/types";
+import { Reminder, ReminderGetMany } from "@/modules/reminders/types";
 import { ReminderCard } from "@/modules/reminders/ui/component/reminder-card";
 import { PlusIcon } from "lucide-react";
 
 interface RemindersProps {
   reminders: ReminderGetMany;
-  onReminderClick: (reminder: any) => void;
+  onReminderClick: (reminder: Reminder) => void;
   onAddReminderClick: () => void;
 }
 
@@ -34,7 +34,7 @@ export const Reminders = ({
           <li key={id}>
             <ReminderCard
               reminder={reminder}
-              onClick={() => onReminderClick(reminder)}
+              onClick={() => onReminderClick(reminder as Reminder)}
             />
           </li>
         );

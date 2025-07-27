@@ -4,7 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { SettingsDropdown } from "./settings-dropdown";
 
 export const Navbar = () => {
-  const { data, isPending } = authClient.useSession();
+  const { data } = authClient.useSession();
 
   let greeting = "Ciao";
   if (data?.user?.name) {

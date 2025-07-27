@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { convertTimeBetweenTimezones, getTimezoneOptions } from "@/lib/time";
+import { PreferencesGet } from "@/modules/preferences/types";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -89,11 +90,14 @@ export const SettingsForm = ({ onSubmit }: SettingsFormProps) => {
           queryClient.invalidateQueries(trpc.preferences.get.queryOptions());
           queryClient.setQueryData(
             trpc.preferences.get.queryKey(),
-            (old: any) => ({
-              ...old,
-              utcReminderTime,
-              timezone: data.timezone,
-            }),
+            (old: PreferencesGet | undefined) => {
+              if (!old) return undefined;
+              return {
+                ...old,
+                utcReminderTime,
+                timezone: data.timezone,
+              };
+            },
           );
           toast.success("Preferences updated");
           onSubmit?.(data);

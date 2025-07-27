@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/constants";
 import { useAppContext } from "@/hooks/use-app-context";
 import { getReminderTime } from "@/lib/time";
+import { ReminderGetMany } from "@/modules/reminders/types";
 import { ReminderSheet } from "@/modules/reminders/ui/component/reminder-sheet";
 import { Reminders } from "@/modules/reminders/ui/component/reminders";
 import { useTRPC } from "@/trpc/client";
@@ -15,7 +16,9 @@ import { useState } from "react";
 
 export const RemindersView = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedReminder, setSelectedReminder] = useState<any>(null);
+  const [selectedReminder, setSelectedReminder] = useState<
+    ReminderGetMany[number] | null
+  >(null);
   const { setIsSettingsDialogOpen } = useAppContext();
 
   const trpc = useTRPC();
@@ -65,7 +68,7 @@ export const RemindersView = () => {
       <Reminders
         reminders={reminders.data}
         onReminderClick={(reminder) => {
-          setSelectedReminder(reminder);
+          setSelectedReminder(reminder as ReminderGetMany[number]);
           setIsSheetOpen(true);
         }}
         onAddReminderClick={() => {
@@ -90,7 +93,7 @@ export const RemindersView = () => {
       <ReminderSheet
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        initialData={selectedReminder}
+        initialData={selectedReminder ?? undefined}
       />
     </>
   );

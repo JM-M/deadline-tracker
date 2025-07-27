@@ -24,6 +24,7 @@ async function nukeDatabase() {
     }
 
     console.log(`📋 Found ${tables.length} tables to drop:`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tables.forEach((table: any) => {
       console.log(`  - ${table.tablename}`);
     });
