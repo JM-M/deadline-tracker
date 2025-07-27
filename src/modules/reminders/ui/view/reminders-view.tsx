@@ -43,7 +43,7 @@ export const RemindersView = () => {
       <div className="space-y-2 py-10 text-center">
         {reminderTime ? (
           <p className="text-muted-foreground text-sm">
-            Next reminder by{" "}
+            Daily reminder at{" "}
             <span className="text-primary font-semibold">
               {reminderTime.toLocaleString("en-US", {
                 hour: "2-digit",
@@ -51,7 +51,6 @@ export const RemindersView = () => {
                 hour12: true,
               })}
             </span>
-            , tomorrow
           </p>
         ) : (
           <p className="text-muted-foreground text-sm">No reminder time set</p>
